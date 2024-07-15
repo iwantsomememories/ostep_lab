@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char const *argv[])
 {
@@ -9,11 +10,11 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
-    int i, j;
-    int count;
-    char cur;
+    int i;
+    int count = 0;
     FILE *fp;
-    char buffer[1025];
+    char prev[2] = "";
+    char cur[2] = "";
 
     for (i = 1; i < argc; i++)
     {
@@ -25,30 +26,24 @@ int main(int argc, char const *argv[])
             exit(1);
         }
 
-        while (fgets(buffer, 1024, fp) != NULL)
+        while (fread(cur, 1, 1, fp))
         {
-            j = 0;
-            while (j < 1024 && buffer[j] != '\n' && buffer[j] != '\0')
-            {
-                cur = buffer[j];
-                count = 1;
-                while(buffer[j+1] == buffer[j]){
-                    count++;
-                    j++;
+            if(strcmp(cur, prev) == 0)
+                count++;
+            else {
+                if (prev[0] != '\0')
+                {
+                    fwrite(&count, sizeof(int), 1, stdout);
+                    fwrite(prev, sizeof(char), 1, stdout);
                 }
-                // fwrite(&count, sizeof(int), 1, stdout);
-                // fwrite(&cur, sizeof(char), 1, stdout);
-                printf("%d %c", count, cur);
-                j++;
+                count = 1;
+                strcpy(prev, cur);
             }
-            // if (j != 0 && buffer[j] == '\n')
-            // {
-            //     printf("\n");
-            // }
         }
-
         fclose(fp);
     }
-    
+
+    fwrite(&count, sizeof(int), 1, stdout);
+    fwrite(prev, sizeof(char), 1, stdout);
     return 0;
 }
